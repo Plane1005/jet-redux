@@ -1,14 +1,39 @@
 import React from 'react'
-import { appContext, store, connect } from './redux'
+import { Provider, createStore, connect } from './redux'
+import { connectToUser } from './connecters/connectToUser'
 import './App.css'
+
+const reducer = (state, { type, payload }) => {
+	if (type === 'updateUser') {
+		return {
+			...state,
+			user: {
+				...state.user,
+				...payload,
+			},
+		}
+	} else {
+		return state
+	}
+}
+
+const initState = {
+  user: {
+    name: 'jet',
+    age: 18,
+  },
+  group: { name: '学习redux' },
+}
+
+const store = createStore(initState,reducer)
 
 function App() {
 	return (
-		<appContext.Provider value={store}>
+		<Provider store={store}>
 			<One />
 			<Two />
 			<Three />
-		</appContext.Provider>
+		</Provider>
 	)
 }
 
@@ -24,28 +49,24 @@ const Two = () => (
 		<UserModify>内容</UserModify>
 	</section>
 )
-const Three = connect(state => {
-  return {
-    group:state.group
-  }
-})(({ group }) => <section>Three{ group.name }</section>)
-const User = connect((state) => {
-	return { user: state.user }
-})(({ user }) => {
+const Three = connect((state) => {
+	return {
+		group: state.group,
+	}
+})(({ group }) => <section>Three{group.name}</section>)
+
+const User = connectToUser(({ user }) => {
 	return <div>User:{user.name}</div>
 })
 
-const UserModify = connect()(({ state, dispatch, children }) => {
+const UserModify = connectToUser(({ user, updateUser, children }) => {
 	const onChange = (e) => {
-		dispatch({
-			type: 'updateUser',
-			payload: { name: e.target.value },
-		})
+		updateUser({ name: e.target.value })
 	}
 	return (
 		<div>
 			{children}
-			<input type='text' value={state.user.name} onChange={onChange} />
+			<input type='text' value={user.name} onChange={onChange} />
 		</div>
 	)
 })

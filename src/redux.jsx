@@ -1,69 +1,86 @@
 import React, { useState, useContext, useEffect } from 'react'
-export const store = {
-	state: {
-		user: {
-			name: 'jet',
-			age: 18,
-		},
-		group: { name: '学习redux' },
-	},
-	setState: (newState) => {
-		// console.log(newState)
-		store.state = newState
-		store.listeners.map((fn) => fn(store.state))
-	},
-	listeners: [],
+
+let state = undefined
+let reducer = undefined
+let listeners = []
+
+const setState = (newState) => {
+  // console.log(newState)
+  state = newState
+  listeners.map((fn) => fn(state))
+}
+  
+const store = {
+  getState: () => {
+    return state
+  },
+  dispatch: (action) => {
+    setState(reducer(state, action))
+  },
 	subscribe: (fn) => {
-		store.listeners.push(fn)
+		listeners.push(fn)
 		return () => {
-			const index = store.listeners.indexOf(fn)
-			store.listeners.splice(index, 1)
+			const index = listeners.indexOf(fn)
+			listeners.splice(index, 1)
 		}
 	},
 }
 
-const reducer = (state, { type, payload }) => {
-	if (type === 'updateUser') {
-		return {
-			...state,
-			user: {
-				...state.user,
-				...payload,
-			},
-		}
-	} else {
-		return state
-	}
+let dispatch = store.dispatch
+
+const preDispatch = dispatch
+
+dispatch = (action) => {
+  if (action instanceof Function) {
+    action(dispatch)
+  } else {
+    preDispatch(action)
+  }
+}
+
+export const createStore = (initState, _reducer) => {
+	state = initState
+  reducer = _reducer
+  return store
 }
 
 const isChanged = (oldState, newState) => {
-  let changed = false
-  for (let key in oldState) {
-    if (oldState[key] !== newState[key]) {
-      changed = true
-    }
-  }
-  return changed
+	let changed = false
+	for (let key in oldState) {
+		if (oldState[key] !== newState[key]) {
+			changed = true
+		}
+	}
+	return changed
 }
 
-export const connect = (selector) => (Component) => {
+export const connect = (selector, dispatchSelector) => (Component) => {
 	return (props) => {
-		const { state, setState } = useContext(appContext)
 		const [, setRender] = useState({})
 		const data = selector ? selector(state) : { state }
+		const dispatchers = dispatchSelector
+			? dispatchSelector(store.dispatch)
+			: { dispatch: store.dispatch }
 		useEffect(() => {
-      return store.subscribe(() => {
-        const newData = selector ? selector(store.state) : { state: store.state }
-        if (isChanged(data, newData)) {
-          setRender({})
-        }
+			return store.subscribe(() => {
+				const newData = selector
+					? selector(state)
+					: { state }
+				if (isChanged(data, newData)) {
+					setRender({})
+				}
 			})
 		}, [selector])
-		const dispatch = (action) => {
-			setState(reducer(state, action))
-		}
-		return <Component {...props} {...data} dispatch={dispatch} />
+		return <Component {...props} {...data} {...dispatchers} />
 	}
 }
 
 export const appContext = React.createContext(null)
+
+export const Provider = ({ store, children }) => {
+  return (
+    <appContext.Provider value={store}>
+      {children}
+    </appContext.Provider>
+  )
+}
