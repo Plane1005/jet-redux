@@ -5,18 +5,18 @@ let reducer = undefined
 let listeners = []
 
 const setState = (newState) => {
-  // console.log(newState)
-  state = newState
-  listeners.map((fn) => fn(state))
+	// console.log(newState)
+	state = newState
+	listeners.map((fn) => fn(state))
 }
-  
+
 const store = {
-  getState: () => {
-    return state
-  },
-  dispatch: (action) => {
-    setState(reducer(state, action))
-  },
+	getState: () => {
+		return state
+	},
+	dispatch: (action) => {
+		setState(reducer(state, action))
+	},
 	subscribe: (fn) => {
 		listeners.push(fn)
 		return () => {
@@ -31,17 +31,29 @@ let dispatch = store.dispatch
 const preDispatch = dispatch
 
 dispatch = (action) => {
-  if (action instanceof Function) {
-    action(dispatch)
-  } else {
-    preDispatch(action)
-  }
+	if (action instanceof Function) {
+		action(dispatch)
+	} else {
+		preDispatch(action)
+	}
+}
+
+const preDispatch2 = dispatch
+
+dispatch = (action) => {
+  if (action.payload instanceof Promise) {
+		action.payload.then((data) => {
+			dispatch({ ...action, payload: data })
+		})
+	} else {
+		preDispatch2(action)
+	}
 }
 
 export const createStore = (initState, _reducer) => {
 	state = initState
-  reducer = _reducer
-  return store
+	reducer = _reducer
+	return store
 }
 
 const isChanged = (oldState, newState) => {
@@ -59,13 +71,11 @@ export const connect = (selector, dispatchSelector) => (Component) => {
 		const [, setRender] = useState({})
 		const data = selector ? selector(state) : { state }
 		const dispatchers = dispatchSelector
-			? dispatchSelector(store.dispatch)
-			: { dispatch: store.dispatch }
+			? dispatchSelector(dispatch)
+			: { dispatch: dispatch }
 		useEffect(() => {
 			return store.subscribe(() => {
-				const newData = selector
-					? selector(state)
-					: { state }
+				const newData = selector ? selector(state) : { state }
 				if (isChanged(data, newData)) {
 					setRender({})
 				}
@@ -78,9 +88,5 @@ export const connect = (selector, dispatchSelector) => (Component) => {
 export const appContext = React.createContext(null)
 
 export const Provider = ({ store, children }) => {
-  return (
-    <appContext.Provider value={store}>
-      {children}
-    </appContext.Provider>
-  )
+	return <appContext.Provider value={store}>{children}</appContext.Provider>
 }
