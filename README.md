@@ -85,7 +85,7 @@ const reducer = (state, { type, payload }) => {
 ```
 
 ## connect
-- **connect** 是一个高阶函数，来源于 **react-redux**，它真正连接 **Redux** 和 **React**，它包在我们的容器组件的外一层，它接收上面 **Provider** 提供的 **store** 里面的 **state** 和 **dispatch**，传给一个构造函数，返回一个对象，以属性形式传给我们的容器组件。**首先传入stateSelector**、**dispatchSelector**，然后返回一个生产 **Component** 的函数，再传入需要处理的 **Component**，返回生产后的 **Component**
+- **connect** 是一个高阶函数，来源于 **react-redux**，它真正连接 **Redux** 和 **React**，它包在我们的容器组件的外一层，它接收上面 **Provider** 提供的 **store** 里面的 **state** 和 **dispatch**，传给一个构造函数，返回一个对象，以属性形式传给我们的容器组件。首先传入 **stateSelector**、**dispatchSelector**，然后返回一个生产 **Component** 的函数，再传入需要处理的 **Component**，返回生产后的 **Component**
 ``` javaScript
 export const connect = (stateSelector, dispatchSelector) => (Component) => {
 	return (props) => {
@@ -140,7 +140,7 @@ dispatch = (action) => {
 	}
 }
 ```
-- 传入的参数是 **dispatch** 而非 **preDispatch** 的原因是有可能 **then** 还会返回一个函数
+- 传入的参数是 **dispatch** 而非 **preDispatch** 的原因是有可能 **then** 还会返回一个 **Promise**
 
 ---
 自此就完成了对 **redux** 的小小复现
