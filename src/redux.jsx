@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 
 let state = undefined
 let reducer = undefined
@@ -66,21 +66,21 @@ const isChanged = (oldState, newState) => {
 	return changed
 }
 
-export const connect = (selector, dispatchSelector) => (Component) => {
-	return (props) => {
+export const connect = (stateSelector, dispatchSelector) => (Component) => {
+  return (props) => {
 		const [, setRender] = useState({})
-		const data = selector ? selector(state) : { state }
+		const data = stateSelector ? stateSelector(state) : { state }
 		const dispatchers = dispatchSelector
 			? dispatchSelector(dispatch)
 			: { dispatch: dispatch }
 		useEffect(() => {
 			return store.subscribe(() => {
-				const newData = selector ? selector(state) : { state }
+				const newData = stateSelector ? stateSelector(state) : { state }
 				if (isChanged(data, newData)) {
 					setRender({})
 				}
 			})
-		}, [selector])
+		}, [stateSelector])
 		return <Component {...props} {...data} {...dispatchers} />
 	}
 }

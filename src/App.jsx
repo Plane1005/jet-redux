@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Provider, createStore, connect } from './redux'
 import { connectToUser } from './connecters/connectToUser'
 import './App.css'
@@ -43,6 +43,7 @@ const One = () => (
 		<User />
 	</section>
 )
+
 const Two = () => (
 	<section>
 		Two
@@ -60,10 +61,11 @@ const Three = connect((state) => {
 const ajax = async () => {
 	return new Promise((res, rej) => {
 		setTimeout(() => {
-      res({
-        data: {
-          name: '2s后的数据'
-      }})
+			res({
+				data: {
+					name: '2s后的数据',
+				},
+			})
 		}, 2000)
 	})
 }
@@ -73,7 +75,7 @@ const User = connectToUser(({ user }) => {
 })
 
 const fetchUser = (dispatch) => {
-  dispatch({type:'updateUser',payload:ajax().then(res => res.data)})
+	dispatch({ type: 'updateUser', payload: ajax().then((res) => res.data) })
 }
 
 const UserModify = connect(
@@ -81,8 +83,8 @@ const UserModify = connect(
 	null
 )(({ state, dispatch }) => {
 	const onClick = (e) => {
-    // dispatch({ type: 'updateUser', payload: ajax().then(res => res.data) })
-    dispatch(fetchUser)
+		// dispatch({ type: 'updateUser', payload: ajax().then(res => res.data) })
+		dispatch(fetchUser)
 	}
 	return (
 		<div>
