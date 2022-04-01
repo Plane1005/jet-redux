@@ -45,7 +45,7 @@ const setState = (newState) => {
 ```
 
 ## Provider
-通过 **React.createContext** 创建一个可以向子组件传递数据的对象，返回一个携带者store的组件，这样在项目的任何地方都可以访问到 **store**，不用像 **props** 那样一层一层传递下去
+通过 **React.createContext** 创建一个可以向子组件传递数据的对象，返回一个携带者store的组件，这样在项目的任何地方都可以通过 **appContext** 访问到 **store**，不用像 **props** 那样一层一层传递下去
 
 ``` javaScript
 export const appContext = React.createContext(null)
